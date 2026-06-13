@@ -1,0 +1,62 @@
+# yantresh-hub — runs Caddy + the portfolio + every project's API container.
+# Each project lives under projects/<name> (git submodule). Adding a project
+# = one service block here + one Caddyfile block + one ADDRESS line in .env.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      YANTRESH_ADDRESS: ${YANTRESH_ADDRESS}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge]
+
+  portfolio:
+    build:
+      context: ./projects/patel-portfolio
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks: [edge]
+
+  yantresh-api:
+    build:
+      context: ./projects/yantresh-os
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    restart: unless-stopped
+    environment:
+      YANTRESH_API_KEY: ${YANTRESH_API_KEY}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+    volumes:
+      - yantresh_state:/app/.yantresh
+      - yantresh_workspace:/app/workspace
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks: [edge]
+
+networks:
+  edge:
+
+volumes:
+  caddy_data:
+  caddy_config:
+  yantresh_state:
+  yantresh_workspace:
