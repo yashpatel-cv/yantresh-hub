@@ -1,0 +1,11 @@
+# Install: sudo cp deploy/yantresh-pull.* /etc/systemd/system/
+# Edit WorkingDirectory/ExecStart below if this repo isn't at /opt/yantresh-hub.
+[Unit]
+Description=Pull latest yantresh-hub images and recreate changed containers
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/yantresh-hub
+ExecStart=/opt/yantresh-hub/deploy/pull-update.sh

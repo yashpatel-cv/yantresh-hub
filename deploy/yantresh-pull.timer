@@ -1,0 +1,12 @@
+# Install: sudo cp deploy/yantresh-pull.* /etc/systemd/system/
+#          sudo systemctl enable --now yantresh-pull.timer
+[Unit]
+Description=Periodically pull and apply latest yantresh-hub images
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
