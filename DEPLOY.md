@@ -8,7 +8,7 @@ recreates only containers whose image digest changed.
 ## 1. One-time VPS setup
 
 ```bash
-ssh -i ~/.ssh/krutrim-db-1-ssh-key-2025-12-02.key debian@<vps-ip>
+ssh -i ~/.ssh/<your-vps-key> debian@<vps-ip>
 
 # Docker + Compose plugin (Debian/Ubuntu)
 curl -fsSL https://get.docker.com | sudo sh
@@ -75,6 +75,10 @@ docker compose logs caddy --tail 50    # cert issuance status
 
 ```bash
 sudo cp deploy/yantresh-pull.service deploy/yantresh-pull.timer /etc/systemd/system/
+# The service runs as a non-root user (member of the docker group) — point
+# it at whichever user owns /opt/yantresh-hub, typically the one you're
+# logged in as:
+sudo sed -i "s/^User=.*/User=$USER/" /etc/systemd/system/yantresh-pull.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now yantresh-pull.timer
 systemctl list-timers yantresh-pull.timer

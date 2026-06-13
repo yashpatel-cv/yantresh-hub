@@ -7,5 +7,10 @@ Requires=docker.service
 
 [Service]
 Type=oneshot
+# Runs as the user that owns /opt/yantresh-hub and the docker group, not
+# root — DEPLOY.md step 5 rewrites this line to $USER before installing.
+User=deploy
+Group=docker
 WorkingDirectory=/opt/yantresh-hub
 ExecStart=/opt/yantresh-hub/deploy/pull-update.sh
+NoNewPrivileges=true
