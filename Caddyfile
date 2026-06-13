@@ -1,0 +1,20 @@
+# yantresh-hub Caddyfile — one block per public address.
+# {$VAR} is substituted from .env at container start (Caddy native feature).
+# Nothing here names a domain literally — see .env.example.
+
+{$DOMAIN} {
+	reverse_proxy portfolio:8080
+}
+
+{$YANTRESH_ADDRESS} {
+	reverse_proxy yantresh-api:8000
+}
+
+# --- Adding a new project ---
+# 1. docker-compose.yml: add a "<name>-api" service, build: ./projects/<name>
+# 2. .env: add "<NAME>_ADDRESS=<name>.{$DOMAIN}" (or a domain of its own)
+# 3. below: add a block ->  {$<NAME>_ADDRESS} { reverse_proxy <name>-api:<port> }
+# 4. DNS: point <NAME>_ADDRESS at this host
+#
+# Moving a project to its own domain later = change its ADDRESS value in
+# .env + DNS. No edits needed in this file.
