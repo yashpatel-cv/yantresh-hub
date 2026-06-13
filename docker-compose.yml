@@ -19,6 +19,16 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     networks: [edge]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
 
   portfolio:
     image: ghcr.io/${GHCR_OWNER}/patel-portfolio:${PORTFOLIO_IMAGE_TAG:-main}
@@ -32,6 +42,16 @@ services:
     cap_drop:
       - ALL
     networks: [edge]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
 
   yantresh-api:
     image: ghcr.io/${GHCR_OWNER}/yantresh-os:${YANTRESH_IMAGE_TAG:-main}
@@ -49,4 +69,24 @@ services:
     security_opt:
       - no-new-privileges:true
     cap_drop:
-  
+      - ALL
+    networks: [edge]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+networks:
+  edge:
+
+volumes:
+  caddy_data:
+  caddy_config:
+  yantresh_state:
+  yantresh_workspace:
