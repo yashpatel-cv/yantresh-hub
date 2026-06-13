@@ -1,6 +1,7 @@
-# yantresh-hub — runs Caddy + the portfolio + every project's API container.
-# Each project lives under projects/<name> (git submodule). Adding a project
-# = one service block here + one Caddyfile block + one ADDRESS line in .env.
+# yantresh-hub — runs Caddy + one container per project, all pulled from
+# GHCR. The VPS only ever `docker compose pull` — images are built by each
+# project's own CI (see DEPLOY.md). Adding a project = one service block
+# here + one Caddyfile block + one ADDRESS line in .env.
 
 services:
   caddy:
@@ -12,6 +13,7 @@ services:
     environment:
       DOMAIN: ${DOMAIN}
       YANTRESH_ADDRESS: ${YANTRESH_ADDRESS}
+      ACME_EMAIL: ${ACME_EMAIL}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -19,8 +21,7 @@ services:
     networks: [edge]
 
   portfolio:
-    build:
-      context: ./projects/patel-portfolio
+    image: ghcr.io/${GHCR_OWNER}/patel-portfolio:${PORTFOLIO_IMAGE_TAG:-main}
     platform: ${DOCKER_PLATFORM:-linux/arm64}
     restart: unless-stopped
     read_only: true
@@ -33,8 +34,7 @@ services:
     networks: [edge]
 
   yantresh-api:
-    build:
-      context: ./projects/yantresh-os
+    image: ghcr.io/${GHCR_OWNER}/yantresh-os:${YANTRESH_IMAGE_TAG:-main}
     platform: ${DOCKER_PLATFORM:-linux/arm64}
     restart: unless-stopped
     environment:
@@ -49,14 +49,4 @@ services:
     security_opt:
       - no-new-privileges:true
     cap_drop:
-      - ALL
-    networks: [edge]
-
-networks:
-  edge:
-
-volumes:
-  caddy_data:
-  caddy_config:
-  yantresh_state:
-  yantresh_workspace:
+  
