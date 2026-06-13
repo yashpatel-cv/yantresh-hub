@@ -6,20 +6,37 @@
 
 | Repo | Role | Remote |
 |---|---|---|
-| `yantresh-hub` (this repo) | Caddy + compose + `.env` — the only place domains/addresses/secrets live | none yet |
-| `yantresh-os` | Amatya/Karta agent + FastAPI seam (`api.py`), own Dockerfile | none yet |
-| `patel-portfolio` | Astro static site, own Dockerfile | none yet |
+| `yantresh-hub` (this repo) | Caddy + compose + `.env` — the only place domains/addresses/secrets/image refs live | `git@github.com:yashpatel-cv/yantresh-hub.git` |
+| `yantresh-os` | Amatya/Karta agent + FastAPI seam (`api.py`), own Dockerfile + CI (GHCR) | `https://github.com/yashpatel-cv/yantresh-os` |
+| `patel-portfolio` | Astro static site, own Dockerfile + CI (GHCR) | `https://github.com/yashpatel-cv/patel-portfolio` |
 
-None of the three have a GitHub remote yet — `projects/yantresh-os` and
-`projects/patel-portfolio` are placeholders (`.gitkeep`) until each repo has
-a remote to submodule from.
+## Image flow — pull-based CD
+
+```
+push to main
+   │
+   ▼
+project repo CI (build-push.yml)
+   │  docker/build-push-action, linux/arm64+amd64
+   ▼
+ghcr.io/<owner>/<name>:main (+ sha, +semver on tags)
+   │
+   ▼  (yantresh-pull.timer, every 5 min)
+VPS: docker compose pull && up -d --remove-orphans
+```
+
+- `yantresh-hub` never builds images — `docker-compose.yml` only has
+  `image:` refs (`ghcr.io/${GHCR_OWNER}/<name>:${<NAME>_IMAGE_TAG}`).
+- `GHCR_OWNER` and `*_IMAGE_TAG` are `.env` lines — no owner/repo name is
+  hardcoded in `Caddyfile` or `docker-compose.yml`.
+- Full VPS setup (Docker, firewall, GHCR auth, timer install): `DEPLOY.md`.
 
 ## Routing — subdomain per project, no portfolio embedding
 
 ```
 DNS → VPS (Oracle Ampere A1, ARM64, debian@<vps-ip>)
             │
-          Caddy (TLS, auto-cert)
+          Caddy (TLS, auto-cert, ACME_EMAIL)
    ┌────────┴─────────┐
 {$DOMAIN}        {$YANTRESH_ADDRESS}
 portfolio:8080   yantresh-api:8000
@@ -33,24 +50,8 @@ portfolio:8080   yantresh-api:8000
   in `Caddyfile` or `docker-compose.yml`.
 
 **Adding project N**: one service block + one Caddy block + one `.env` line
-+ one DNS record. See `README.md`.
+(`*_ADDRESS` + `*_IMAGE_TAG`) + one DNS record + CI workflow in that
+project's repo. See `README.md`.
 
 **Moving a project to its own domain**: change its `*_ADDRESS` line in
-`.env` + DNS. Zero file edits in `Caddyfile`/compose.
-
-## Dropped from earlier design
-
-Last session built a portfolio-embedded "mission console" (same-origin
-`/api/*` demo lane, `config.js` rendering, rate-limited Caddy matcher). Per
-user decision (2026-06-13): **no portfolio embedding** — each project is
-subdomain-only. None of that work was merged into the real repos; nothing
-to undo.
-
-## Outstanding
-
-- Push `yantresh-os` and `patel-portfolio` to remotes, then
-  `git submodule add` them into `projects/`.
-- Buy a domain, set `DOMAIN` + `YANTRESH_ADDRESS` in `.env`.
-- DNS: A/AAAA for `{$DOMAIN}` and `{$YANTRESH_ADDRESS}` → VPS IP.
-- Provision VPS (Docker + Compose), `caddy validate` the Caddyfile.
-- First deploy + smoke test.
+`.env` + DNS. Zero file edits
