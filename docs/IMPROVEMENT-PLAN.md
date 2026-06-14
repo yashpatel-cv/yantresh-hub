@@ -17,10 +17,11 @@
 
 ## P1 — high impact, low effort
 
-1. **Compose-level healthchecks.** `caddy` and `yantresh-api` have none;
-   only the portfolio image bakes one. Without them `docker compose ps`
-   can't tell "running" from "healthy", and a wedged container is not
-   restarted. Add `healthcheck:` blocks (curl `/healthz` / Caddy admin).
+1. ~~**Compose-level healthchecks.**~~ **Done** (2026-06-14). `caddy` probes
+   its admin API; `yantresh-api` probes `/healthz` via bundled python.
+   Note: Docker does *not* auto-restart a merely-unhealthy running
+   container — only on exit. Restart-on-unhealthy still needs an autoheal
+   watcher (deferred as bloat unless a real wedge is observed).
 2. **Edge rate-limit on the public demo lane.** `/v1/demo/missions` is
    unauthenticated. Add a Caddy `rate_limit` (or keep it inside yantresh-os
    if already enforced — verify) to cap abuse independent of the app.
@@ -34,10 +35,10 @@
 
 ## P2 — medium
 
-5. **State backup automation.** `yantresh_state` (ledger + fuse) is
-   backed up only by a manual command in DEPLOY.md. Add a small
-   `yantresh-backup.timer` writing a rotated tarball to disk (or object
-   storage).
+5. ~~**State backup automation.**~~ **Done** (2026-06-14).
+   `deploy/backup-state.sh` + `yantresh-backup.timer` archive the volume
+   read-only daily, rotating `BACKUP_KEEP` copies. Off-host copy (e.g. to
+   object storage) still open — current backups live on the same VPS.
 6. **Image vulnerability scan in CI.** Add a Trivy step to each
    `build-push.yml` (fail on HIGH/CRITICAL). Cheap, catches base-image CVEs
    before they reach the VPS.

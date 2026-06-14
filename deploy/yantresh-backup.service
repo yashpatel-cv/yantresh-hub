@@ -1,0 +1,18 @@
+# Install: sudo cp deploy/yantresh-backup.* /etc/systemd/system/
+# Edit WorkingDirectory/ExecStart below if this repo isn't at /opt/yantresh-hub.
+[Unit]
+Description=Archive the yantresh_state volume (ledger + fuse)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+# Runs as the user that owns /opt/yantresh-hub and the docker group, not
+# root — DEPLOY.md rewrites this line to $USER before installing.
+User=deploy
+Group=docker
+WorkingDirectory=/opt/yantresh-hub
+ExecStart=/opt/yantresh-hub/deploy/backup-state.sh
+NoNewPrivileges=true
+# Optional overrides (defaults: ./backups, keep 14):
+# Environment=BACKUP_DIR=/var/backups/yantresh BACKUP_KEEP=30

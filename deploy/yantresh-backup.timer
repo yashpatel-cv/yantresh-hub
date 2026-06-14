@@ -1,0 +1,12 @@
+# Install: sudo cp deploy/yantresh-backup.* /etc/systemd/system/
+#          sudo systemctl enable --now yantresh-backup.timer
+[Unit]
+Description=Daily archive of the yantresh_state volume
+
+[Timer]
+# Daily at 03:30 UTC; catch up if the VPS was off at the scheduled time.
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

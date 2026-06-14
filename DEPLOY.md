@@ -109,10 +109,33 @@ docker compose logs -f yantresh-api
 
 ## 7. State & backups
 
-`yantresh_state` (ledger + fuse) and `yantresh_workspace` are named Docker
-volumes. Back up with:
+`yantresh_state` (write-ahead ledger + daily fuse) and `yantresh_workspace`
+are named Docker volumes. Losing `yantresh_state` wipes the supervisor's
+spend bounds, so back it up automatically with the timer:
 
 ```bash
-docker run --rm -v yantresh-hub_yantresh_state:/data -v $PWD:/backup \
-  alpine tar czf /backup/yantresh_state.tar.gz -C /data .
+sudo cp deploy/yantresh-backup.service deploy/yantresh-backup.timer /etc/systemd/system/
+sudo sed -i "s/^User=.*/User=$USER/" /etc/systemd/system/yantresh-backup.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now yantresh-backup.timer
+systemctl list-timers yantresh-backup.timer
+```
+
+The timer runs `deploy/backup-state.sh` daily at 03:30 UTC: it tars the
+volume **read-only** (cannot corrupt live state) into `BACKUP_DIR`
+(default `./backups`) and keeps the newest `BACKUP_KEEP` archives
+(default 14). Override both via `Environment=` in the service unit, or
+the commented lines in `.env`.
+
+Force a backup now, or restore one:
+
+```bash
+# Manual backup
+deploy/backup-state.sh
+
+# Restore: stop the API, replace the volume's contents, restart.
+docker compose stop yantresh-api
+docker run --rm -v yantresh-hub_yantresh_state:/data -v "$PWD/backups":/backup \
+  alpine sh -c "rm -rf /data/* && tar xzf /backup/<archive>.tar.gz -C /data"
+docker compose up -d yantresh-api
 ```
