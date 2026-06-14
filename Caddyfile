@@ -34,6 +34,11 @@
 	reverse_proxy yantresh-api:8000
 }
 
+{$SROTANTRA_ADDRESS} {
+	import security_headers
+	reverse_proxy srotantra-api:8000
+}
+
 # --- Adding a new project ---
 # 1. docker-compose.yml: add a "<name>-api" service,
 #    image: ghcr.io/${GHCR_OWNER}/<name>:${<NAME>_IMAGE_TAG:-main}

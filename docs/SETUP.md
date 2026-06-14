@@ -9,6 +9,7 @@
 | `yantresh-hub` (this repo) | Caddy + compose + `.env` — the only place domains/addresses/secrets/image refs live | `git@github.com:yashpatel-cv/yantresh-hub.git` |
 | `yantresh-os` | Amatya/Karta agent + FastAPI seam (`api.py`), own Dockerfile + CI (GHCR) | `https://github.com/yashpatel-cv/yantresh-os` |
 | `patel-portfolio` | Astro static site, own Dockerfile + CI (GHCR) | `https://github.com/yashpatel-cv/patel-portfolio` |
+| `srotantra` | Data Scale Engine — product identity-resolution + FTS5 search API, own Dockerfile + CI (GHCR) | `https://github.com/yashpatel-cv/srotantra` |
 
 ## Image flow — pull-based CD
 
@@ -37,9 +38,9 @@ VPS: docker compose pull && up -d --remove-orphans
 DNS → VPS (Oracle Ampere A1, ARM64, debian@<vps-ip>)
             │
           Caddy (TLS, auto-cert, ACME_EMAIL)
-   ┌────────┴──────────┬───────────────────┐
-{$DOMAIN}      {$PORTFOLIO_ADDRESS}   {$YANTRESH_ADDRESS}
-301 redirect    portfolio:8080        yantresh-api:8000
+   ┌────────┴──────────┬──────────────────┬────────────────────┐
+{$DOMAIN}    {$PORTFOLIO_ADDRESS}  {$YANTRESH_ADDRESS}  {$SROTANTRA_ADDRESS}
+301 redirect  portfolio:8080       yantresh-api:8000    srotantra-api:8000
    → portfolio
 ```
 
@@ -50,6 +51,9 @@ DNS → VPS (Oracle Ampere A1, ARM64, debian@<vps-ip>)
 - `{$YANTRESH_ADDRESS}` → yantresh-api, full surface (private lane needs
   `X-API-Key`; demo lane is whatever yantresh-os itself exposes — not
   specially routed by the hub)
+- `{$SROTANTRA_ADDRESS}` → srotantra-api, read-only product-search API
+  (`/v1/search`, `/v1/products/{id}`, `/v1/stats`). Seeds a demo db on first
+  boot; build the real db from sources into the `srotantra_data` volume.
 - Every value above is a `.env` line. No domain/project name is hardcoded
   in `Caddyfile` or `docker-compose.yml`.
 
