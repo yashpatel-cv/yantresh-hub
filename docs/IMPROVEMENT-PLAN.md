@@ -22,13 +22,16 @@
    Note: Docker does *not* auto-restart a merely-unhealthy running
    container — only on exit. Restart-on-unhealthy still needs an autoheal
    watcher (deferred as bloat unless a real wedge is observed).
-2. **Edge rate-limit on the public demo lane.** `/v1/demo/missions` is
-   unauthenticated. Add a Caddy `rate_limit` (or keep it inside yantresh-os
-   if already enforced — verify) to cap abuse independent of the app.
-3. **Global security headers at Caddy.** Portfolio sets headers in nginx,
-   but the apex redirect and `yantresh-api` responses don't. Add an
-   `header` directive (HSTS, X-Content-Type-Options, Referrer-Policy) in a
-   shared Caddy snippet.
+2. ~~**Edge rate-limit on the public demo lane.**~~ **Resolved in-app**
+   (verified 2026-06-14). `api.py:_check_demo_rate_limit` already enforces a
+   bounded per-IP/minute limit on `/v1/demo/missions`. An edge limit would
+   need a custom Caddy build (`rate_limit` is not in `caddy:2-alpine`) —
+   deferred as bloat unless the app-level limit proves insufficient.
+3. ~~**Global security headers at Caddy.**~~ **Done** (2026-06-14). Shared
+   `(security_headers)` snippet (HSTS, nosniff, Referrer-Policy, X-Frame-
+   Options, `-Server`) imported into the apex redirect and `yantresh-api`.
+   Portfolio keeps its own fuller nginx set (incl. CSP) — one source per
+   response.
 4. **Pin GitHub Actions by commit SHA.** Mutable `@v4` tags are a supply-
    chain risk. Pin `actions/*` and `docker/*` to SHAs (Dependabot/Renovate
    can keep them current).

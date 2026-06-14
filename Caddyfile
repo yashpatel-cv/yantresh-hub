@@ -6,8 +6,22 @@
 	email {$ACME_EMAIL}
 }
 
+# Baseline security headers for services that don't set their own.
+# (patel-portfolio ships a fuller set, including CSP, from its own nginx —
+# don't import this there, to keep one source of truth per response.)
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		-Server
+	}
+}
+
 # Root domain redirects to the portfolio subdomain (path + query preserved).
 {$DOMAIN} {
+	import security_headers
 	redir https://{$PORTFOLIO_ADDRESS}{uri} permanent
 }
 
@@ -16,6 +30,7 @@
 }
 
 {$YANTRESH_ADDRESS} {
+	import security_headers
 	reverse_proxy yantresh-api:8000
 }
 
