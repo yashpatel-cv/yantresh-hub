@@ -6,7 +6,12 @@
 	email {$ACME_EMAIL}
 }
 
+# Root domain redirects to the portfolio subdomain (path + query preserved).
 {$DOMAIN} {
+	redir https://{$PORTFOLIO_ADDRESS}{uri} permanent
+}
+
+{$PORTFOLIO_ADDRESS} {
 	reverse_proxy portfolio:8080
 }
 

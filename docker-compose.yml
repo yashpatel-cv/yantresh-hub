@@ -12,6 +12,7 @@ services:
       - "443:443"
     environment:
       DOMAIN: ${DOMAIN}
+      PORTFOLIO_ADDRESS: ${PORTFOLIO_ADDRESS}
       YANTRESH_ADDRESS: ${YANTRESH_ADDRESS}
       ACME_EMAIL: ${ACME_EMAIL}
     volumes:
