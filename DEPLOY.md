@@ -124,8 +124,14 @@ systemctl list-timers yantresh-backup.timer
 The timer runs `deploy/backup-state.sh` daily at 03:30 UTC: it tars the
 volume **read-only** (cannot corrupt live state) into `BACKUP_DIR`
 (default `./backups`) and keeps the newest `BACKUP_KEEP` archives
-(default 14). Override both via `Environment=` in the service unit, or
-the commented lines in `.env`.
+(default 14). The service reads these from `.env` (`EnvironmentFile`), or
+set them via `Environment=` in the unit.
+
+**Off-host copy (recommended).** Backups on the same VPS don't survive a
+host loss. Set `BACKUP_REMOTE` in `.env` to an rclone remote (e.g.
+`s3:my-bucket/yantresh`) and install + configure rclone on the host; each
+archive is then pushed off-host. Manage remote retention with a bucket
+lifecycle rule.
 
 Force a backup now, or restore one:
 

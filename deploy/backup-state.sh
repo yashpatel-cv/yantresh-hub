@@ -24,8 +24,17 @@ docker run --rm \
   -v "$(realpath "$DEST"):/backup" \
   alpine tar czf "/backup/${ARCHIVE}" -C /data .
 
-# Rotate: keep the newest $KEEP archives, delete older ones.
+# Rotate local copies: keep the newest $KEEP archives, delete older ones.
 ls -1t "$DEST"/yantresh_state_*.tar.gz 2>/dev/null \
   | tail -n +"$((KEEP + 1))" | xargs -r rm -f
+
+# Off-host copy (optional): if BACKUP_REMOTE is set to an rclone remote
+# (e.g. "s3:my-bucket/yantresh"), push the new archive so a VPS loss can't
+# take the only copy. Manage remote retention with a bucket lifecycle rule
+# — kept out of here to stay minimal. Requires rclone on the host.
+if [ -n "${BACKUP_REMOTE:-}" ]; then
+  rclone copy "${DEST}/${ARCHIVE}" "${BACKUP_REMOTE}/"
+  echo "off-host: ${BACKUP_REMOTE}/${ARCHIVE}"
+fi
 
 echo "backup: ${DEST}/${ARCHIVE} (keeping ${KEEP})"

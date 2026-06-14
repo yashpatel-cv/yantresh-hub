@@ -40,8 +40,9 @@
 
 5. ~~**State backup automation.**~~ **Done** (2026-06-14).
    `deploy/backup-state.sh` + `yantresh-backup.timer` archive the volume
-   read-only daily, rotating `BACKUP_KEEP` copies. Off-host copy (e.g. to
-   object storage) still open — current backups live on the same VPS.
+   read-only daily, rotating `BACKUP_KEEP` copies. Optional off-host push
+   via `BACKUP_REMOTE` (rclone) when set — remote retention left to a
+   bucket lifecycle rule.
 6. ~~**Image vulnerability scan in CI.**~~ **Done** (2026-06-14). Both
    workflows run a Trivy scan on the pushed image by digest, failing on
    fixable HIGH/CRITICAL CVEs (`ignore-unfixed: true`).

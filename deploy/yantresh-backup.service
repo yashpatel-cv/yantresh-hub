@@ -12,7 +12,10 @@ Type=oneshot
 User=deploy
 Group=docker
 WorkingDirectory=/opt/yantresh-hub
+# Load BACKUP_DIR / BACKUP_KEEP / BACKUP_REMOTE (and anything else) from .env.
+# Leading "-" makes it optional — the script's built-in defaults still apply.
+EnvironmentFile=-/opt/yantresh-hub/.env
 ExecStart=/opt/yantresh-hub/deploy/backup-state.sh
 NoNewPrivileges=true
-# Optional overrides (defaults: ./backups, keep 14):
+# Or set overrides inline instead of via .env:
 # Environment=BACKUP_DIR=/var/backups/yantresh BACKUP_KEEP=30
