@@ -1,5 +1,9 @@
 # yantresh-hub
 
+> **AI agents:** read [`CLAUDE.md`](CLAUDE.md) before making any edit. It is
+> the mandatory rules file (minimalism, no hardcoded secrets, atomic commits,
+> LF endings) and applies to every change.
+
 Deployment hub. Infra only — no application code lives here. Runs Caddy +
 one container per project, pulled from GHCR, on one Oracle Ampere A1
 (ARM64) VPS.
