@@ -1,6 +1,6 @@
 # Current setup (living doc)
 
-> Update this on every architecture/topology change. Last updated: 2026-06-13.
+> Update this on every architecture/topology change. Last updated: 2026-06-14.
 
 ## Repos
 
@@ -31,18 +31,22 @@ VPS: docker compose pull && up -d --remove-orphans
   hardcoded in `Caddyfile` or `docker-compose.yml`.
 - Full VPS setup (Docker, firewall, GHCR auth, timer install): `DEPLOY.md`.
 
-## Routing — subdomain per project, no portfolio embedding
+## Routing — subdomain per project, bare apex redirects
 
 ```
 DNS → VPS (Oracle Ampere A1, ARM64, debian@<vps-ip>)
             │
           Caddy (TLS, auto-cert, ACME_EMAIL)
-   ┌────────┴─────────┐
-{$DOMAIN}        {$YANTRESH_ADDRESS}
-portfolio:8080   yantresh-api:8000
+   ┌────────┴──────────┬───────────────────┐
+{$DOMAIN}      {$PORTFOLIO_ADDRESS}   {$YANTRESH_ADDRESS}
+301 redirect    portfolio:8080        yantresh-api:8000
+   → portfolio
 ```
 
-- `{$DOMAIN}` → portfolio (plain static site, standalone — no API awareness)
+- `{$DOMAIN}` (bare apex) → 301 redirect to `{$PORTFOLIO_ADDRESS}`, path +
+  query preserved. Serves no content itself.
+- `{$PORTFOLIO_ADDRESS}` → portfolio (plain static site, standalone — no
+  API awareness). Default `portfolio.<domain>`.
 - `{$YANTRESH_ADDRESS}` → yantresh-api, full surface (private lane needs
   `X-API-Key`; demo lane is whatever yantresh-os itself exposes — not
   specially routed by the hub)

@@ -32,11 +32,12 @@ git clone <yantresh-hub-remote-url> /opt/yantresh-hub
 cd /opt/yantresh-hub
 cp .env.example .env
 # Edit .env:
-#  - DOMAIN, YANTRESH_ADDRESS  -> your real domain/subdomains (once bought)
-#  - ACME_EMAIL                -> your email, for Let's Encrypt
-#  - GHCR_OWNER                -> your GitHub username/org (lowercase)
-#  - *_IMAGE_TAG               -> "main" to track latest, or pin a release
-#  - YANTRESH_API_KEY, DEEPSEEK_API_KEY -> real secrets
+#  - DOMAIN                              -> apex (redirects to PORTFOLIO_ADDRESS)
+#  - PORTFOLIO_ADDRESS, YANTRESH_ADDRESS -> real subdomains (once bought)
+#  - ACME_EMAIL                          -> your email, for Let's Encrypt
+#  - GHCR_OWNER                          -> your GitHub username/org (lowercase)
+#  - *_IMAGE_TAG                         -> "main" to track latest, or pin a release
+#  - YANTRESH_API_KEY, DEEPSEEK_API_KEY  -> real secrets
 ```
 
 ## 3. GHCR authentication (private images only)
@@ -62,13 +63,14 @@ docker compose up -d
 docker compose ps
 ```
 
-Point DNS A/AAAA records for `DOMAIN` and `YANTRESH_ADDRESS` at the VPS's
-public IP, then check:
+Point DNS A/AAAA records for `DOMAIN`, `PORTFOLIO_ADDRESS`, and
+`YANTRESH_ADDRESS` at the VPS's public IP, then check:
 
 ```bash
-curl -I https://<your-domain>          # portfolio
-curl -I https://<your-yantresh-address> # yantresh-api
-docker compose logs caddy --tail 50    # cert issuance status
+curl -I https://<your-domain>            # apex -> 301 to portfolio
+curl -I https://<your-portfolio-address> # portfolio
+curl -I https://<your-yantresh-address>  # yantresh-api
+docker compose logs caddy --tail 50      # cert issuance status
 ```
 
 ## 5. Install the pull-based CD timer
