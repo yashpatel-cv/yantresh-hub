@@ -20,6 +20,14 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     networks: [edge]
+    # Caddy's admin API (localhost:2019) answers only when the server is up
+    # and the config loaded. busybox wget ships in the alpine image.
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -72,6 +80,15 @@ services:
     cap_drop:
       - ALL
     networks: [edge]
+    # /healthz stays 200 even on a blown fuse (a correct, bounded state).
+    # No curl/wget in the image — probe with the bundled python, matching
+    # the Dockerfile's baked HEALTHCHECK.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     deploy:
       resources:
         limits:
