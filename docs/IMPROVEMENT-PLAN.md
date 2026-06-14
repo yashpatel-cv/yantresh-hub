@@ -32,9 +32,9 @@
    Options, `-Server`) imported into the apex redirect and `yantresh-api`.
    Portfolio keeps its own fuller nginx set (incl. CSP) — one source per
    response.
-4. **Pin GitHub Actions by commit SHA.** Mutable `@v4` tags are a supply-
-   chain risk. Pin `actions/*` and `docker/*` to SHAs (Dependabot/Renovate
-   can keep them current).
+4. ~~**Pin GitHub Actions by commit SHA.**~~ **Done** (2026-06-14). Both
+   `build-push.yml` workflows pin every `actions/*` and `docker/*` step to a
+   commit SHA with a `# vN` comment. Add Dependabot later to bump them.
 
 ## P2 — medium
 
@@ -42,9 +42,9 @@
    `deploy/backup-state.sh` + `yantresh-backup.timer` archive the volume
    read-only daily, rotating `BACKUP_KEEP` copies. Off-host copy (e.g. to
    object storage) still open — current backups live on the same VPS.
-6. **Image vulnerability scan in CI.** Add a Trivy step to each
-   `build-push.yml` (fail on HIGH/CRITICAL). Cheap, catches base-image CVEs
-   before they reach the VPS.
+6. ~~**Image vulnerability scan in CI.**~~ **Done** (2026-06-14). Both
+   workflows run a Trivy scan on the pushed image by digest, failing on
+   fixable HIGH/CRITICAL CVEs (`ignore-unfixed: true`).
 7. **Optional `www.` handling.** Decide policy: redirect `www.<domain>` →
    apex (which then redirects to portfolio) or drop it. Document either way.
 8. **Digest-pinned production tags.** `:main` is mutable; a re-pushed
