@@ -33,11 +33,16 @@ cd /opt/yantresh-hub
 cp .env.example .env
 # Edit .env:
 #  - DOMAIN                              -> apex (redirects to PORTFOLIO_ADDRESS)
-#  - PORTFOLIO_ADDRESS, YANTRESH_ADDRESS -> real subdomains (once bought)
+#  - PORTFOLIO_ADDRESS, YANTRESH_ADDRESS -> real subdomains
+#  - SHOP_API_ADDRESS, SHOP_ADMIN_ADDRESS, COMMERCE_STOREFRONT_ADDRESS,
+#    DEMO_STORE_ADDRESS                  -> Yantresh Commerce hostnames
 #  - ACME_EMAIL                          -> your email, for Let's Encrypt
 #  - GHCR_OWNER                          -> your GitHub username/org (lowercase)
 #  - *_IMAGE_TAG                         -> "main" to track latest, or pin a release
 #  - YANTRESH_API_KEY, DEEPSEEK_API_KEY  -> real secrets
+#  - POSTGRES_PASSWORD, DATABASE_URL,
+#    MEDUSA_DATABASE_URL, REDIS_URL,
+#    SECRET_MASTER_KEY                   -> Yantresh Commerce runtime secrets
 ```
 
 ## 3. GHCR authentication (private images only)
@@ -63,13 +68,18 @@ docker compose up -d
 docker compose ps
 ```
 
-Point DNS A/AAAA records for `DOMAIN`, `PORTFOLIO_ADDRESS`, and
-`YANTRESH_ADDRESS` at the VPS's public IP, then check:
+Point DNS A/AAAA records for `DOMAIN`, `PORTFOLIO_ADDRESS`,
+`YANTRESH_ADDRESS`, `SROTANTRA_ADDRESS`, and the Yantresh Commerce hosts at
+the VPS's public IP, then check:
 
 ```bash
 curl -I https://<your-domain>            # apex -> 301 to portfolio
 curl -I https://<your-portfolio-address> # portfolio
 curl -I https://<your-yantresh-address>  # yantresh-api
+curl -I https://commerce.yantresh.com    # commerce storefront
+curl -I https://demo-store.yantresh.com  # demo tenant storefront
+curl -I https://shop-admin.yantresh.com  # commerce admin
+curl -I https://shop-api.yantresh.com    # commerce API
 docker compose logs caddy --tail 50      # cert issuance status
 ```
 
