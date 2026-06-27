@@ -134,6 +134,77 @@ services:
         max-size: "5m"
         max-file: "2"
 
+  yantresh-commerce-postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-yantresh_control}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - yantresh-commerce-postgres:/var/lib/postgresql/data
+    networks: [edge]
+
+  yantresh-commerce-redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - yantresh-commerce-redis:/data
+    networks: [edge]
+
+  yantresh-commerce-storefront:
+    image: ${STOREFRONT_IMAGE}
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    restart: unless-stopped
+    depends_on:
+      - yantresh-commerce-postgres
+      - yantresh-commerce-redis
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      MEDUSA_DATABASE_URL: ${MEDUSA_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SECRET_MASTER_KEY: ${SECRET_MASTER_KEY}
+    networks: [edge]
+
+  yantresh-commerce-admin:
+    image: ${ADMIN_IMAGE}
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    restart: unless-stopped
+    depends_on:
+      - yantresh-commerce-postgres
+      - yantresh-commerce-redis
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SECRET_MASTER_KEY: ${SECRET_MASTER_KEY}
+    networks: [edge]
+
+  yantresh-commerce-medusa:
+    image: ${MEDUSA_IMAGE}
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    restart: unless-stopped
+    depends_on:
+      - yantresh-commerce-postgres
+      - yantresh-commerce-redis
+    environment:
+      DATABASE_URL: ${MEDUSA_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    networks: [edge]
+
+  yantresh-commerce-worker:
+    image: ${WORKER_IMAGE}
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    restart: unless-stopped
+    depends_on:
+      - yantresh-commerce-postgres
+      - yantresh-commerce-redis
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      MEDUSA_DATABASE_URL: ${MEDUSA_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SECRET_MASTER_KEY: ${SECRET_MASTER_KEY}
+    networks: [edge]
+
 networks:
   edge:
 
@@ -143,3 +214,5 @@ volumes:
   yantresh_state:
   yantresh_workspace:
   srotantra_data:
+  yantresh-commerce-postgres:
+  yantresh-commerce-redis:
