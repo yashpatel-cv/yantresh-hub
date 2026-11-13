@@ -101,6 +101,20 @@ builds+pushes a new `:main` image to GHCR -> within 5 minutes the timer
 pulls it and recreates that one container. No SSH or GitHub secrets needed
 for deploy.
 
+The timer also fast-forwards this repo (`git pull --ff-only`, anonymous
+HTTPS — keep the `origin` fetch URL token-free), so pushing hub changes to
+`main` deploys them too. A changed Caddyfile is validated before Caddy is
+restarted; an invalid one aborts the run and leaves Caddy as it was.
+
+- Optional projects (`srotantra`, `commerce`) are compose profiles: list
+  them in `COMPOSE_PROFILES` in `.env` only once their image is on GHCR and
+  their DNS points here, otherwise one missing image blocks every deploy.
+- Alerting: set `DEPLOY_PING_URL` in `.env` to a healthchecks.io check
+  (period 5 min). Each run pings it only when the pull succeeded and no
+  container is crash-looping, so missed pings mean a broken deploy.
+- Run compose by hand from a clean shell: exported variables (e.g. an API
+  key in `~/.bashrc`) override `.env` and recreate containers.
+
 If the repo is cloned somewhere other than `/opt/yantresh-hub`, edit
 `WorkingDirectory`/`ExecStart` in `yantresh-pull.service` before copying it.
 
