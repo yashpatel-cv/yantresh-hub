@@ -21,6 +21,7 @@ services:
       DEMO_STORE_ADDRESS: ${DEMO_STORE_ADDRESS}
       STOREFRONT_TLS_ASK_URL: ${STOREFRONT_TLS_ASK_URL}
       ACME_EMAIL: ${ACME_EMAIL}
+      TALLYBIZ_ADDRESS: ${TALLYBIZ_ADDRESS}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

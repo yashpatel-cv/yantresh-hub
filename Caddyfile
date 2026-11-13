@@ -55,6 +55,15 @@
 	reverse_proxy yantresh-commerce-storefront:3000
 }
 
+# TallyBIZ: separate stack with its own compose/deploy (not managed here).
+# Its tallybiz-web container joins this stack's edge network and routes
+# /api + /admin internally, so this block is the only link between them.
+{$TALLYBIZ_ADDRESS} {
+	import security_headers
+	encode zstd gzip
+	reverse_proxy tallybiz-web:8080
+}
+
 # --- Adding a new project ---
 # 1. docker-compose.yml: add a "<name>-api" service,
 #    image: ghcr.io/${GHCR_OWNER}/<name>:${<NAME>_IMAGE_TAG:-main}
