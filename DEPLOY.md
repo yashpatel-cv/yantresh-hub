@@ -58,7 +58,7 @@ echo <PAT> | docker login ghcr.io -u <github-username> --password-stdin
 This writes `~/.docker/config.json`, which `docker compose pull` reuses
 automatically — including from the systemd timer's service user.
 
-If the packages are public, skip this step.
+If the packages are public, skip this step (preferred: no token on the server).
 
 ## 4. First run
 
@@ -101,8 +101,8 @@ builds+pushes a new `:main` image to GHCR -> within 5 minutes the timer
 pulls it and recreates that one container. No SSH or GitHub secrets needed
 for deploy.
 
-The timer also fast-forwards this repo (`git pull --ff-only`, anonymous
-HTTPS — keep the `origin` fetch URL token-free), so pushing hub changes to
+The timer also fast-forwards this repo (`git pull --ff-only` over the
+server's SSH key — never put a token in the remote URL), so pushing hub changes to
 `main` deploys them too. A changed Caddyfile is validated before Caddy is
 restarted; an invalid one aborts the run and leaves Caddy as it was.
 
