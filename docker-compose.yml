@@ -22,11 +22,14 @@ services:
       STOREFRONT_TLS_ASK_URL: ${STOREFRONT_TLS_ASK_URL}
       ACME_EMAIL: ${ACME_EMAIL}
       TALLYBIZ_ADDRESS: ${TALLYBIZ_ADDRESS}
+      CODE_ADDRESS: ${CODE_ADDRESS}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks: [edge]
+    # code-server runs on the host (bound to docker0), not as a container.
+    extra_hosts: ["host.docker.internal:host-gateway"]
     # Caddy's admin API (localhost:2019) answers only when the server is up
     # and the config loaded. busybox wget ships in the alpine image.
     healthcheck:

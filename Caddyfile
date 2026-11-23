@@ -75,3 +75,15 @@
 # Moving a project to its own domain later: change its *_ADDRESS value in
 # .env + update DNS. No Caddyfile edit needed — the block already reads
 # {$<NAME>_ADDRESS}, whatever that resolves to.
+
+# code-server (browser VS Code) runs on the host as a systemd service bound to
+# docker0, password auth handled by code-server itself. Not security_headers:
+# its X-Frame-Options DENY breaks code-server's same-origin webview iframes.
+{$CODE_ADDRESS} {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+	reverse_proxy host.docker.internal:8080
+}
